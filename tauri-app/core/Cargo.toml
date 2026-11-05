@@ -1,0 +1,12 @@
+[package]
+name = "uniconvert-core"
+version = "0.1.0"
+edition = "2021"
+description = "Transport-independent media conversion core for UniConvert"
+
+[dependencies]
+image = { version = "0.25.10", default-features = false, features = ["avif", "bmp", "gif", "ico", "jpeg", "png", "tiff", "webp"] }
+kamadak-exif = "0.6.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3"
