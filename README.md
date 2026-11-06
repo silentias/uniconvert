@@ -2,21 +2,21 @@
 
 UniConvert — локальное desktop-приложение и CLI для конвертации изображений, аудио и видео. Раздел «Извлечение Meta» показывает свойства изображений, аудио, видео и сведения из Gerber X2/X3. Интерфейс написан на React и работает в оболочке Tauri 2, а основная логика вынесена в независимый Rust-крейт `uniconvert-core`.
 
-> Версия **0.1.0**, активная разработка и подготовка к бета-релизу. Для Windows x64 собраны приложение и NSIS-установщик с FFmpeg/FFprobe. Установка на чистой Windows пока не проверена. Для Linux/macOS подготовлены сценарий сборки и ручной GitHub Actions workflow; готовые пакеты этих платформ пока не подтверждены.
+> Версия **1.0.0**, активная разработка и подготовка к бета-релизу. Для Windows x64 собраны приложение и NSIS-установщик с FFmpeg/FFprobe. Установка на чистой Windows пока не проверена. Для Linux/macOS подготовлены сценарий сборки и ручной GitHub Actions workflow; готовые пакеты этих платформ пока не подтверждены.
 
 ## Установка и готовые сборки
 
 ### Windows x64
 
-- Установщик: [UniConvert-0.1.0-Windows-x64-Setup.exe](release/UniConvert-0.1.0-Windows-x64-Setup.exe), около 40 МБ. Устанавливает приложение и FFmpeg/FFprobe для текущего пользователя, поддерживает русский и английский языки, ярлыки и удаление через настройки Windows. Если WebView2 отсутствует, скачивает его установщик — потребуется интернет.
+- Установщик: [UniConvert-1.0.0-Windows-x64-Setup.exe](release/win/UniConvert-1.0.0-Windows-x64-Setup.exe), около 40 МБ. Устанавливает приложение и FFmpeg/FFprobe для текущего пользователя, поддерживает русский и английский языки, ярлыки и удаление через настройки Windows. Если WebView2 отсутствует, скачивает его установщик — потребуется интернет.
 - Portable: [release/win](release/win). Скопируйте всю папку и запустите `uniconvert.exe`. Сохраняйте `ffmpeg.exe` и `ffprobe.exe` рядом с приложением. Для распространения упаковывайте всю папку в ZIP, а не один EXE.
-- Дополнительный CLI: `release/win/uniconvert-cli.exe`. Примеры — в [release/win/README.txt](release/win/README.txt).
+- Дополнительный CLI: `release/win/uniconvert-cli.exe`. Примеры — в разделе CLI ниже.
 
 Установщик пока не подписан. Релизные файлы нужно пересобирать после изменения исходников.
 
 ### Linux и macOS
 
-Нативная сборка описана в [release/UNIX-README.txt](release/UNIX-README.txt). Сценарий создаёт приложение и CLI, а на macOS — также `.app`. Workflow [Unix release builds](.github/workflows/unix-release.yml) запускается вручную через `workflow_dispatch` и сохраняет `.tar.gz`-артефакты для Linux x64 и macOS ARM64/Intel. Результаты его выполнения здесь пока не подтверждены.
+Нативная сборка описана в [docs/UNIX-README.txt](docs/UNIX-README.txt). Сценарий создаёт приложение и CLI, а на macOS — также `.app`. Workflow [Unix release builds](.github/workflows/unix-release.yml) запускается вручную через `workflow_dispatch` и сохраняет `.tar.gz`-артефакты для Linux x64 и macOS ARM64/Intel. Результаты его выполнения здесь пока не подтверждены.
 
 Готовые `.AppImage`, `.deb` и `.dmg` пока не создаются. FFmpeg/FFprobe в Unix-пакеты не включены; требуются отдельная установка или явные пути к бинарникам. Подпись и нотарификация macOS не настроены.
 
@@ -343,7 +343,7 @@ cargo test --manifest-path tauri-app/Cargo.toml -p uniconvert-core -p uniconvert
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-windows-installer.ps1
 ```
 
-Windows NSIS-установщик сохраняется в `release/UniConvert-0.1.0-Windows-x64-Setup.exe`. Он устанавливается для текущего пользователя, поддерживает русский и английский языки, создаёт ярлыки и запись удаления. FFmpeg/FFprobe включаются из `release/win` в подкаталог `binaries`; эти два файла должны присутствовать до сборки. При отсутствии WebView2 установщик скачивает его bootstrapper, поэтому потребуется интернет. Установщик пока не подписан. Проверка на чистой Windows остаётся необходимой перед публичным выпуском. Unix-сборки используют отдельный сценарий, описанный в `release/UNIX-README.txt`.
+Windows NSIS-установщик сохраняется в `release/win/UniConvert-1.0.0-Windows-x64-Setup.exe`. Он устанавливается для текущего пользователя, поддерживает русский и английский языки, создаёт ярлыки и запись удаления. FFmpeg/FFprobe включаются из `tauri-app/binaries` в подкаталог `binaries`; эти два файла должны присутствовать до сборки. При отсутствии WebView2 установщик скачивает его bootstrapper, поэтому потребуется интернет. Установщик пока не подписан. Проверка на чистой Windows остаётся необходимой перед публичным выпуском. Unix-сборки используют отдельный сценарий, описанный в `docs/UNIX-README.txt`.
 
 Сценарий также обновляет `release/win/uniconvert.exe`. CLI в portable-папке он не пересобирает: используйте `pnpm cli:build` и скопируйте `tauri-app/target/cli/release/uniconvert.exe` в `release/win/uniconvert-cli.exe`.
 
@@ -356,7 +356,7 @@ pnpm install --frozen-lockfile
 bash scripts/build-unix-release.sh
 ```
 
-Результат появляется в `release/linux-x64`, `release/linux-arm64`, `release/macos-x64` или `release/macos-arm64` в зависимости от хоста. Это сценарий нативной сборки, а не кросс-компиляция из Windows. Подробнее — [инструкция Unix](release/UNIX-README.txt).
+Результат появляется в `release/linux-x64`, `release/linux-arm64`, `release/macos-x64` или `release/macos-arm64` в зависимости от хоста. Это сценарий нативной сборки, а не кросс-компиляция из Windows. Подробнее — [инструкция Unix](docs/UNIX-README.txt).
 
 ## Что необходимо перед публичной бетой
 

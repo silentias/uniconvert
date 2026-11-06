@@ -3,8 +3,8 @@
   "bundle": {
     "targets": ["nsis"],
     "resources": {
-      "../release/win/ffmpeg.exe": "binaries/ffmpeg.exe",
-      "../release/win/ffprobe.exe": "binaries/ffprobe.exe"
+      "binaries/ffmpeg.exe": "binaries/ffmpeg.exe",
+      "binaries/ffprobe.exe": "binaries/ffprobe.exe"
     },
     "windows": {
       "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },

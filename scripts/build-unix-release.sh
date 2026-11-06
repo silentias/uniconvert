@@ -28,5 +28,4 @@ cp tauri-app/target/cli/release/uniconvert "$destination/uniconvert-cli"
 if [[ "$platform" == macos ]]; then
   ditto tauri-app/target/release/bundle/macos/uniconvert.app "$destination/UniConvert.app"
 fi
-cp release/UNIX-README.txt "$destination/README.txt"
 echo "Built $destination"
