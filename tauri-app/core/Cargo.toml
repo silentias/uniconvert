@@ -1,6 +1,6 @@
 [package]
 name = "uniconvert-core"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description = "Transport-independent media conversion core for UniConvert"
 

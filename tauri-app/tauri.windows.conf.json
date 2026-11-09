@@ -9,7 +9,7 @@
     "windows": {
       "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
       "nsis": {
-        "installMode": "currentUser",
+        "installMode": "perMachine",
         "languages": ["Russian", "English"],
         "displayLanguageSelector": true,
         "startMenuFolder": "UniConvert",
