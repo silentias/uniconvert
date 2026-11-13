@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { APP_VERSION } from "@/shared/config/app-version"
 
 import {
   getDefaultOutputDirectory,
@@ -19,7 +20,7 @@ export function SettingsPage() {
 
   return (
     <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-6">
-      <div className="flex flex-col gap-6">
+      <div className="flex min-h-full flex-col gap-6">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Настройки</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -46,6 +47,9 @@ export function SettingsPage() {
           description="Эта папка будет автоматически подставляться при новой конвертации. Настройка сохраняется на этом устройстве."
         />
       </section>
+      <footer className="mt-auto max-w-2xl border-t pt-5 text-sm text-muted-foreground">
+        UniConvert · Версия {APP_VERSION}
+      </footer>
       </div>
     </main>
   )

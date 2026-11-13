@@ -15,6 +15,7 @@ pub struct OutputEstimate {
 pub fn estimate_output(
     input: PathBuf,
     media_kind: String,
+    extract_audio: Option<bool>,
     format: String,
     sample_rate_hz: Option<u32>,
     channels: Option<u32>,
@@ -31,7 +32,11 @@ pub fn estimate_output(
         return Ok(None);
     }
     if media_kind == "audio" {
-        let info = probe::probe_audio(&input, &std::sync::atomic::AtomicBool::new(false))?;
+        let info = probe::probe_audio_stream(
+            &input,
+            &std::sync::atomic::AtomicBool::new(false),
+            extract_audio.unwrap_or(false),
+        )?;
         let duration = uniconvert_core::analysis::audio_trim::trimmed_duration(
             trim_start,
             trim_end,

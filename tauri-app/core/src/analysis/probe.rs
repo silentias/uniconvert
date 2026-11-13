@@ -19,6 +19,14 @@ pub struct AudioInfo {
 }
 
 pub fn probe_audio(path: &Path, cancelled: &AtomicBool) -> Result<AudioInfo, ConvertError> {
+    probe_audio_stream(path, cancelled, false)
+}
+
+pub fn probe_audio_stream(
+    path: &Path,
+    cancelled: &AtomicBool,
+    allow_video: bool,
+) -> Result<AudioInfo, ConvertError> {
     let metadata = std::fs::metadata(path)
         .map_err(|error| ConvertError::InvalidInput(format!("{}: {error}", path.display())))?;
     if !metadata.is_file() {
@@ -29,19 +37,29 @@ pub fn probe_audio(path: &Path, cancelled: &AtomicBool) -> Result<AudioInfo, Con
     let path = std::fs::canonicalize(path).map_err(|error| ConvertError::Io(error.to_string()))?;
     let json: Value = serde_json::from_str(&ffprobe::probe_json_cancellable(&path, cancelled)?)
         .map_err(|error| ConvertError::ProcessFailed(error.to_string()))?;
-    parse_audio_info(&json, metadata.len())
+    parse_audio_stream_info(&json, metadata.len(), allow_video)
 }
 
+#[cfg(test)]
 fn parse_audio_info(json: &Value, file_size: u64) -> Result<AudioInfo, ConvertError> {
+    parse_audio_stream_info(json, file_size, false)
+}
+
+fn parse_audio_stream_info(
+    json: &Value,
+    file_size: u64,
+    allow_video: bool,
+) -> Result<AudioInfo, ConvertError> {
     let streams = json["streams"]
         .as_array()
         .ok_or_else(|| ConvertError::InvalidInput("В файле не найдены аудиопотоки".into()))?;
-    if streams
-        .iter()
-        .any(|stream| stream["codec_type"] == "video" && stream["disposition"]["attached_pic"] != 1)
+    if !allow_video
+        && streams.iter().any(|stream| {
+            stream["codec_type"] == "video" && stream["disposition"]["attached_pic"] != 1
+        })
     {
         return Err(ConvertError::InvalidInput(
-            "Поддерживаются только аудиофайлы; извлечение звука из видео пока недоступно".into(),
+            "Для видео выберите режим извлечения аудио".into(),
         ));
     }
     let audio = streams
@@ -89,6 +107,11 @@ mod audio_tests {
         assert_eq!(info.channels, Some(2));
         value["streams"][0]["disposition"]["attached_pic"] = json!(0);
         assert!(parse_audio_info(&value, 123).is_err());
+        assert!(parse_audio_stream_info(&value, 123, true).is_ok());
+        assert!(
+            parse_audio_stream_info(&json!({"streams": [{"codec_type": "video"}]}), 0, true)
+                .is_err()
+        );
         assert!(parse_audio_info(&json!({"streams":[]}), 0).is_err());
     }
 }

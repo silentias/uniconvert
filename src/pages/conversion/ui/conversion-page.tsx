@@ -47,6 +47,7 @@ export function ConversionPage() {
   const [outputDirectory, setOutputDirectory] = useState(
     getDefaultOutputDirectory,
   )
+  const [videoOutputMode, setVideoOutputMode] = useState<"video" | "audio">("video")
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
   const [imageFormat, setImageFormat] = useConversionSetting<string>("imageFormat", imageOutputFormats[0], oneOf(imageOutputFormats))
   const [audioFormat, setAudioFormat] = useConversionSetting<string>("audioFormat", audioOutputFormats[0], oneOf(audioOutputFormats))
@@ -96,9 +97,11 @@ export function ConversionPage() {
     setAudioTrimValid(valid)
     setConversionStatus({ state: "idle" })
   }, [])
-  const mediaInfo = uploadedFile
+  const sourceInfo = uploadedFile
     ? detectMediaFile(uploadedFile.name, uploadedFile.file?.type)
     : null
+  const extractingAudio = sourceInfo?.kind === "video" && videoOutputMode === "audio"
+  const mediaInfo = sourceInfo && extractingAudio ? { ...sourceInfo, kind: "audio" as const } : sourceInfo
   const outputFormat = mediaInfo?.kind === "audio" ? audioFormat : mediaInfo?.kind === "video" ? videoFormat : imageFormat
   const setOutputFormat = mediaInfo?.kind === "audio" ? setAudioFormat : mediaInfo?.kind === "video" ? setVideoFormat : setImageFormat
   const availableFormats =
@@ -149,6 +152,7 @@ export function ConversionPage() {
       setIsEstimating(true)
       void invoke<OutputEstimate | null>("estimate_output", {
         input: uploadedFile.path,
+        extractAudio: extractingAudio,
         mediaKind: mediaInfo.kind,
         format: outputFormat.toLowerCase(),
         sampleRateHz: audioSampleRate === "auto" ? null : Number(audioSampleRate),
@@ -187,6 +191,7 @@ export function ConversionPage() {
   }, [
     uploadedFile?.path,
     mediaInfo?.kind,
+    extractingAudio,
     outputFormat,
     audioBitrate,
     audioSampleRate,
@@ -228,6 +233,7 @@ export function ConversionPage() {
       const result = await invoke<{ path: string }>(command, {
         ...(jobId ? { jobId } : {}),
         input: uploadedFile.path,
+        extractAudio: extractingAudio,
         outputDirectory: outputDirectory || null,
         format: outputFormat.toLowerCase(),
         ...(mediaInfo.kind === "image" ? { quality, stripMetadata } : {}),
@@ -333,13 +339,24 @@ export function ConversionPage() {
           disabled={conversionStatus.state === "converting"}
           onFileChange={(file) => {
             setUploadedFile(file)
+            setVideoOutputMode("video")
             setAudioTrim(null)
             setAudioTrimValid(true)
             setConversionStatus({ state: "idle" })
           }}
         />
 
-        {mediaInfo?.kind === "audio" && uploadedFile && (
+        {sourceInfo?.kind === "video" && (
+          <section className="rounded-xl border bg-card p-5">
+            <h2 className="mb-3 text-sm font-medium">Что сохранить из видео?</h2>
+            <div className="flex gap-2" role="group" aria-label="Тип результата">
+              <Button variant={videoOutputMode === "video" ? "default" : "outline"} aria-pressed={videoOutputMode === "video"} disabled={conversionStatus.state === "converting"} onClick={() => { setVideoOutputMode("video"); setConversionStatus({ state: "idle" }); setProgress(0) }}>Видео</Button>
+              <Button variant={videoOutputMode === "audio" ? "default" : "outline"} aria-pressed={videoOutputMode === "audio"} disabled={conversionStatus.state === "converting"} onClick={() => { setVideoOutputMode("audio"); setConversionStatus({ state: "idle" }); setProgress(0) }}>Аудио</Button>
+            </div>
+            {extractingAudio && <p className="mt-3 text-sm text-muted-foreground">Будет сохранена первая звуковая дорожка без видео. Выберите аудиоформат и настройки ниже.</p>}
+          </section>
+        )}
+        {sourceInfo?.kind === "audio" && uploadedFile && (
           <AudioTrimmer
             key={uploadedFile.path ?? `${uploadedFile.name}-${uploadedFile.file?.lastModified}`}
             path={uploadedFile.path}

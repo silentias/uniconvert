@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Emitter, State};
 
 use uniconvert_core::{
-    audio::{prepare_conversion, AudioOptions},
+    audio::{prepare_conversion_from_media, AudioOptions},
     converters::AudioConverter,
     domain::{ConvertError, ConvertOutput},
 };
@@ -18,6 +18,7 @@ pub async fn convert_audio(
     input: PathBuf,
     output_directory: Option<PathBuf>,
     format: String,
+    extract_audio: Option<bool>,
     bitrate_kbps: Option<u32>,
     sample_rate_hz: Option<u32>,
     channels: Option<u8>,
@@ -47,8 +48,13 @@ pub async fn convert_audio(
             trim_start,
             trim_end,
         };
-        let prepared =
-            prepare_conversion(&input, output_directory.as_deref(), &options, &cancelled)?;
+        let prepared = prepare_conversion_from_media(
+            &input,
+            output_directory.as_deref(),
+            &options,
+            &cancelled,
+            extract_audio.unwrap_or(false),
+        )?;
         AudioConverter.convert_with_progress(
             &prepared.request,
             prepared.info.duration_seconds,

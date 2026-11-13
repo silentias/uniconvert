@@ -2,7 +2,7 @@
 use crate::{
     analysis::{
         audio_trim::trimmed_duration,
-        probe::{probe_audio, AudioInfo},
+        probe::{probe_audio_stream, AudioInfo},
     },
     domain::{CompressionMode, Container, ConvertError, ConvertOptions, ConvertRequest},
     infra::paths::available_output_path,
@@ -81,9 +81,10 @@ impl AudioOptions {
         {
             return Err(invalid("Темп должен быть от 0,5 до 2,0"));
         }
-        if self.pitch_semitones.is_some_and(|value| {
-            !value.is_finite() || !(-12.0..=12.0).contains(&value)
-        }) {
+        if self
+            .pitch_semitones
+            .is_some_and(|value| !value.is_finite() || !(-12.0..=12.0).contains(&value))
+        {
             return Err(invalid("Высота тона должна быть от -12 до 12 полутонов"));
         }
         if self.target_lufs.is_some() && !self.normalize_lufs {
@@ -134,13 +135,22 @@ pub fn prepare_conversion(
     options: &AudioOptions,
     cancelled: &AtomicBool,
 ) -> Result<PreparedAudio, ConvertError> {
+    prepare_conversion_from_media(input, output_directory, options, cancelled, false)
+}
+pub fn prepare_conversion_from_media(
+    input: &Path,
+    output_directory: Option<&Path>,
+    options: &AudioOptions,
+    cancelled: &AtomicBool,
+    allow_video: bool,
+) -> Result<PreparedAudio, ConvertError> {
     let options = options.convert_options()?;
     if cancelled.load(Ordering::Relaxed) {
         return Err(ConvertError::Cancelled);
     }
     let input = std::fs::canonicalize(input)
         .map_err(|error| ConvertError::InvalidInput(format!("{}: {error}", input.display())))?;
-    let info = probe_audio(&input, cancelled)?;
+    let info = probe_audio_stream(&input, cancelled, allow_video)?;
     trimmed_duration(
         options.audio_trim_start,
         options.audio_trim_end,
