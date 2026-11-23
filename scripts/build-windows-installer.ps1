@@ -14,6 +14,7 @@ try {
     $config = Get-Content -LiteralPath tauri-app/tauri.conf.json -Raw | ConvertFrom-Json
     $installer = "tauri-app/target/release/bundle/nsis/uniconvert_$($config.version)_x64-setup.exe"
     if (-not (Test-Path -LiteralPath $installer)) { throw "Installer missing: $installer" }
+    New-Item -ItemType Directory -Force -Path release/win | Out-Null
     $destination = "release/win/UniConvert-$($config.version)-Windows-x64-Setup.exe"
     Copy-Item -LiteralPath $installer -Destination $destination -Force
     Copy-Item -LiteralPath tauri-app/target/release/uniconvert.exe -Destination release/win/uniconvert.exe -Force

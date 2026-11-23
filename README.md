@@ -25,7 +25,7 @@ UniConvert — локальное desktop-приложение и CLI для к�
 
 ### Linux и macOS
 
-Нативная сборка описана в [docs/UNIX-README.txt](docs/UNIX-README.txt). Сценарий создаёт приложение и CLI, а на macOS — также `.app` и `.dmg`. Workflow [Unix release builds](.github/workflows/unix-release.yml) запускается вручную через `workflow_dispatch`, сохраняет `.tar.gz`-артефакты для Linux x64 и macOS ARM64/Intel и прикладывает macOS DMG отдельным файлом. Результаты его выполнения здесь пока не подтверждены.
+Нативная сборка описана в [docs/UNIX-README.txt](docs/UNIX-README.txt). Сценарий создаёт приложение и CLI, а на macOS — также `.app` и `.dmg`. Workflow [Desktop release builds](.github/workflows/unix-release.yml) запускается вручную через `workflow_dispatch`: собирает Linux x64, macOS ARM64/Intel и Windows x64, сохраняет архивы, прикладывает macOS DMG и Windows Setup.exe отдельными файлами. FFmpeg/FFprobe для Windows workflow устанавливает автоматически через Chocolatey. Результаты обновлённого workflow здесь пока не подтверждены.
 
 На macOS сценарий создаёт `.app` и `.dmg` с бесплатной ad-hoc подписью. В DMG приложение можно перетащить в Applications. Такая подпись не подтверждает разработчика, а нотарификация Apple без платного аккаунта не выполняется, поэтому при первом запуске нужно нажать правой кнопкой по приложению в Finder и выбрать «Открыть» → «Открыть».
 
