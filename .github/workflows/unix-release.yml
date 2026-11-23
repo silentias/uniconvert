@@ -39,5 +39,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: uniconvert-${{ matrix.os }}
-          path: release/*.tar.gz
+          path: |
+            release/*.tar.gz
+            release/macos-*/*.dmg
           if-no-files-found: error

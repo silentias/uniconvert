@@ -16,8 +16,9 @@ esac
 destination="release/$platform-$arch"
 pnpm run build
 if [[ "$platform" == macos ]]; then
-  # Tauri creates the native .app with its icon and embedded frontend.
-  (cd tauri-app && pnpm exec tauri build --bundles app)
+  # Ad-hoc signing is configured in tauri.macos.conf.json. It is free and keeps
+  # the app runnable on Apple Silicon, but does not replace Apple notarization.
+  pnpm tauri build --bundles app,dmg
 else
   cargo build --manifest-path tauri-app/Cargo.toml -p uniconvert --release --features custom-protocol
 fi
@@ -27,5 +28,11 @@ cp tauri-app/target/release/uniconvert "$destination/uniconvert"
 cp tauri-app/target/cli/release/uniconvert "$destination/uniconvert-cli"
 if [[ "$platform" == macos ]]; then
   ditto tauri-app/target/release/bundle/macos/uniconvert.app "$destination/UniConvert.app"
+  dmg_files=(tauri-app/target/release/bundle/dmg/*.dmg)
+  if [[ ${#dmg_files[@]} -ne 1 || ! -f "${dmg_files[0]}" ]]; then
+    echo 'Expected exactly one macOS DMG bundle.' >&2
+    exit 1
+  fi
+  cp "${dmg_files[0]}" "$destination/"
 fi
 echo "Built $destination"

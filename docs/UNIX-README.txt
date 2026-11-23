@@ -14,6 +14,8 @@ macOS: установите Xcode Command Line Tools и FFmpeg (brew install ffm
 Результат: release/linux-x64, release/linux-arm64, release/macos-x64
 или release/macos-arm64 в зависимости от системы сборки.
 Внутри: uniconvert (GUI), uniconvert-cli; на macOS также UniConvert.app.
+На macOS также создаётся DMG-установщик: откройте .dmg и перетащите
+UniConvert в папку Applications.
 Запуск Linux: ./uniconvert
 Запуск macOS: откройте UniConvert.app.
 
@@ -22,4 +24,7 @@ FFmpeg/FFprobe в Unix-архивы пока не включаются. Они �
 UNICONVERT_FFPROBE_PATH. На macOS при запуске из Finder PATH может отличаться
 от терминала; для диагностики запускайте ./uniconvert из терминала.
 Linux-сборка требует совместимых системных библиотек WebKitGTK.
-macOS-сборка не подписана и не нотарифицирована.
+macOS-сборка имеет бесплатную ad-hoc подпись и не нотарифицирована Apple.
+При первом запуске macOS может заблокировать приложение. Откройте его через
+правый клик в Finder -> «Открыть» -> «Открыть». Не отключайте Gatekeeper
+глобально и не используйте команды снятия quarantine для всей системы.
